@@ -6,8 +6,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -15,53 +17,58 @@ import (
 
 var (
 	files           []string
-	folders         []string
 	variables       []string
 	parsedVariables = make(map[string]string)
 
-	ErrInvalidVariable          = errors.New("variable was invalid, please follow 'NAME=value'")
-	ErrFolderGivenAsFile        = errors.New("folder given as file, please us -F for folders")
-	ErrFileGivenAsFolder        = errors.New("file given as folder, please us -f for files")
-	ErrNoFilesOrFolderSpecified = errors.New("must specify at least one file or folder")
+	ErrInvalidVariable           = errors.New("variable was invalid, please follow 'NAME=value'")
+	ErrNoFilesOrFoldersSpecified = errors.New("must specify at least one file or folder")
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "pencil",
-	Short: "A Tool to fill in the blanks.",
+	Short: "A Tool to fill in the blanks in your files.",
 	Long: `This tool uses a series of flags and the Go Templating library to
 fill in secrets and values in files and paths.
 
 Point it to a file and it'll treat the file like a Go Template and execute it, 
-pulling in Environment Variables and any other secrets passed into the tool.
-For example: "pencil -f app/config.yml -v SECRET_KEY=something-secret"`,
+pulling in Environment Variables and any other variables passed into the tool.
+For example: "pencil -v SECRET_KEY=something-secret app/config.yml"`,
 
 	Args: func(cmd *cobra.Command, args []string) error {
-		if len(files)+len(folders) == 0 {
-			return ErrNoFilesOrFolderSpecified
+		if len(args) == 0 {
+			return ErrNoFilesOrFoldersSpecified
 		}
 
-		// Check Files
-		for i := 0; i < len(files); i++ {
-			file := files[i]
-			fileInfo, err := os.Stat(file)
+		// Check Args
+		files = make([]string, 0)
+		for i := 0; i < len(args); i++ {
+			arg := args[i]
+			fileInfo, err := os.Stat(arg)
 			if err != nil {
-				return errors.Join(fmt.Errorf("error getting file at %v", file), err)
+				return fmt.Errorf("error getting file or folder %v: %w", arg, err)
 			}
 			if fileInfo.IsDir() {
-				return ErrFolderGivenAsFile
-			}
-		}
+				err = filepath.WalkDir(arg, func(path string, d fs.DirEntry, err error) error {
+					if err != nil {
+						log.Printf("Error accessing path %v, skipping", path)
+						return nil
+					}
 
-		// Check Folders
-		for i := 0; i < len(folders); i++ {
-			folder := folders[i]
-			fileInfo, err := os.Stat(folder)
-			if err != nil {
-				return errors.Join(fmt.Errorf("error getting folder at %v", folder), err)
+					if !d.IsDir() {
+						files = append(files, path)
+					}
+
+					return nil
+				})
+
+				if err != nil {
+					return fmt.Errorf("error while walking through directory: %w", err)
+				}
+
+				continue
 			}
-			if !fileInfo.IsDir() {
-				return ErrFileGivenAsFolder
-			}
+
+			files = append(files, arg)
 		}
 
 		// Check Variables
@@ -79,7 +86,6 @@ For example: "pencil -f app/config.yml -v SECRET_KEY=something-secret"`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Printf("Files: %s", files)
-		log.Printf("Folders: %s", folders)
 		log.Printf("Variables: %s", parsedVariables)
 
 	},
@@ -93,7 +99,5 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().StringArrayVarP(&files, "file", "f", make([]string, 0), "Path to a file you want run through the Template Engine")
-	rootCmd.Flags().StringArrayVarP(&folders, "folder", "F", make([]string, 0), "Path to a directory you want all files underneath run through the Template Engine")
 	rootCmd.Flags().StringArrayVarP(&variables, "variable", "v", make([]string, 0), "A variable to be used in the Templates. e.g. SECRET_KEY=something-secret")
 }
