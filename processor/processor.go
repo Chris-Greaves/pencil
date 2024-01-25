@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -14,10 +16,24 @@ type Processor struct {
 
 type Model struct {
 	Var map[string]string
+	Env map[string]string
 }
 
-func New() Processor {
-	return Processor{}
+func BuildModel(vars map[string]string) Model {
+	return Model{
+		Var: vars,
+		Env: getEnvs(),
+	}
+}
+
+func getEnvs() map[string]string {
+	m := make(map[string]string)
+	for _, e := range os.Environ() {
+		if results := strings.Split(e, "="); len(results) == 2 {
+			m[results[0]] = results[1]
+		}
+	}
+	return m
 }
 
 func NewWithModel(m Model) Processor {

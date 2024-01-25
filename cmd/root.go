@@ -90,7 +90,8 @@ For example: "pencil -v SECRET_KEY=something-secret app/config.yml"`,
 		log.Printf("Files: %s", files)
 		log.Printf("Variables: %s", parsedVariables)
 
-		proc := processor.NewWithModel(processor.Model{Var: parsedVariables})
+		model := processor.BuildModel(parsedVariables)
+		proc := processor.NewWithModel(model)
 		for _, file := range files {
 			var buf bytes.Buffer
 			if err := proc.ParseAndExecuteFile(file, &buf); err != nil {
