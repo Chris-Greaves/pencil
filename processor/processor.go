@@ -13,7 +13,7 @@ type Processor struct {
 }
 
 type Model struct {
-	Values map[string]string
+	Var map[string]string
 }
 
 func New() Processor {
