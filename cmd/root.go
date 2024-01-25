@@ -4,6 +4,7 @@ Copyright © 2024 Chris Greaves cjgreaves97@hotmail.co.uk
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Chris-Greaves/pencil/processor"
 	"github.com/spf13/cobra"
 )
 
@@ -84,10 +86,23 @@ For example: "pencil -v SECRET_KEY=something-secret app/config.yml"`,
 		return nil
 	},
 
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		log.Printf("Files: %s", files)
 		log.Printf("Variables: %s", parsedVariables)
 
+		proc := processor.NewWithModel(processor.Model{Values: parsedVariables})
+		for _, file := range files {
+			var buf bytes.Buffer
+			if err := proc.ParseAndExecuteFile(file, &buf); err != nil {
+				return fmt.Errorf("error while processing %v: %w", file, err)
+			}
+
+			if err := os.WriteFile(file, buf.Bytes(), 0666); err != nil {
+				return fmt.Errorf("error while writing over existing file %v, may be left in a partial state: %w", file, err)
+			}
+		}
+
+		return nil
 	},
 }
 
