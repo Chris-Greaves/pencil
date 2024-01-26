@@ -1,0 +1,12 @@
+services:
+  pencil:
+    build:
+      context: .
+      target: final
+    environment:
+      - OPTION_COUNT=5
+    command:
+      - "-v SECRET_KEY=boo"
+      - "/mnt/server.ini"
+    volumes:
+      - ./test-example/server.ini:/mnt/server.ini
