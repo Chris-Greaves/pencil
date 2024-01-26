@@ -80,7 +80,7 @@ For example: "pencil -v SECRET_KEY=something-secret app/config.yml"`,
 			if len(splitVar) != 2 {
 				return ErrInvalidVariable
 			}
-			parsedVariables[splitVar[0]] = splitVar[1]
+			parsedVariables[strings.TrimSpace(splitVar[0])] = splitVar[1]
 		}
 
 		return nil
