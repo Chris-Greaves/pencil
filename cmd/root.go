@@ -1,5 +1,7 @@
 /*
 Copyright © 2024 Chris Greaves cjgreaves97@hotmail.co.uk
+
+See the file COPYING in the root of this repository for details.
 */
 package cmd
 
