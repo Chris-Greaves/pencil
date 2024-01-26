@@ -11,7 +11,8 @@ import (
 )
 
 type Processor struct {
-	model Model
+	model        Model
+	baseTemplate *template.Template
 }
 
 type Model struct {
@@ -39,18 +40,20 @@ func getEnvs() map[string]string {
 func NewWithModel(m Model) Processor {
 	proc := Processor{}
 	proc.model = m
+	funcs := CreateFuncsFromModel(m)
+	proc.baseTemplate = template.New("base").Funcs(funcs)
 	return proc
 }
 
 func (p *Processor) SetModel(m Model) {
 	p.model = m
+	funcs := CreateFuncsFromModel(m)
+	p.baseTemplate = template.New("base").Funcs(funcs)
 }
 
-// ParseAndExecutePath will parse the path as a template and execute it using the settings provided
+// ParseAndExecutePath will parse the path as a template and execute it using the model set.
 func (p Processor) ParseAndExecutePath(path string) (string, error) {
-	mainTemplate := template.New("main")
-
-	tmpl, err := mainTemplate.Parse(path)
+	tmpl, err := p.baseTemplate.Parse(path)
 	if err != nil {
 		return "", fmt.Errorf("error parsing path '%v' to template: %w", path, err)
 	}
@@ -65,7 +68,7 @@ func (p Processor) ParseAndExecutePath(path string) (string, error) {
 
 // ParseAndExecuteFile will parse a file as a template and execute it using the Model set. it will write out to the writer once Executed.
 func (p Processor) ParseAndExecuteFile(sourcePath string, wr io.Writer) error {
-	fileTemplate, err := template.ParseFiles(sourcePath)
+	fileTemplate, err := p.baseTemplate.ParseFiles(sourcePath)
 	if err != nil {
 		return fmt.Errorf("error Parsing template for file '%v': %w", sourcePath, err)
 	}
