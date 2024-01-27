@@ -33,10 +33,14 @@ func BuildModel(vars map[string]string) Model {
 }
 
 func getEnvs() map[string]string {
+	return convertVarsArrayToMap(os.Environ())
+}
+
+func convertVarsArrayToMap(vars []string) map[string]string {
 	m := make(map[string]string)
-	for _, e := range os.Environ() {
-		if results := strings.Split(e, "="); len(results) == 2 {
-			m[results[0]] = results[1]
+	for _, e := range vars {
+		if index := strings.Index(e, "="); index != -1 {
+			m[e[:index]] = e[index+1:]
 		}
 	}
 	return m

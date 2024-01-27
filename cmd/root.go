@@ -76,13 +76,10 @@ For example: "pencil -v SECRET_KEY=something-secret app/config.yml"`,
 		}
 
 		// Check Variables
-		for i := 0; i < len(variables); i++ {
-			variable := variables[i]
-			splitVar := strings.Split(variable, "=")
-			if len(splitVar) != 2 {
-				return ErrInvalidVariable
-			}
-			parsedVariables[strings.TrimSpace(splitVar[0])] = splitVar[1]
+		if validatedVars, err := validateDirectVars(variables); err != nil {
+			return err
+		} else {
+			parsedVariables = validatedVars
 		}
 
 		return nil
@@ -118,4 +115,25 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().StringArrayVarP(&variables, "variable", "v", make([]string, 0), "A variable to be used in the Templates. e.g. SECRET_KEY=something-secret")
+}
+
+func validateDirectVars(vars []string) (map[string]string, error) {
+	returnVars := make(map[string]string)
+	for i := 0; i < len(vars); i++ {
+		variable := vars[i]
+		// splitVar := strings.Split(variable, "=")
+		// if len(splitVar) != 2 {
+		// 	return nil, ErrInvalidVariable
+		// }
+		// returnVars[strings.TrimSpace(splitVar[0])] = splitVar[1]
+		index := strings.Index(variable, "=")
+		if index == -1 {
+			return nil, ErrInvalidVariable
+		}
+		key := variable[:index]
+		value := variable[index+1:]
+		returnVars[strings.TrimSpace(key)] = value
+	}
+
+	return returnVars, nil
 }
