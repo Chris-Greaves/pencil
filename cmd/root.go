@@ -44,35 +44,10 @@ For example: "pencil -v SECRET_KEY=something-secret app/config.yml"`,
 		}
 
 		// Check Args
-		files = make([]string, 0)
-		for i := 0; i < len(args); i++ {
-			arg := args[i]
-			fileInfo, err := os.Stat(arg)
-			if err != nil {
-				return fmt.Errorf("error getting file or folder %v: %w", arg, err)
-			}
-			if fileInfo.IsDir() {
-				err = filepath.WalkDir(arg, func(path string, d fs.DirEntry, err error) error {
-					if err != nil {
-						log.Printf("Error accessing path %v, skipping", path)
-						return nil
-					}
-
-					if !d.IsDir() {
-						files = append(files, path)
-					}
-
-					return nil
-				})
-
-				if err != nil {
-					return fmt.Errorf("error while walking through directory: %w", err)
-				}
-
-				continue
-			}
-
-			files = append(files, arg)
+		if validatedPaths, err := validatePathArgs(args); err != nil {
+			return err
+		} else {
+			files = validatedPaths
 		}
 
 		// Check Variables
@@ -117,15 +92,43 @@ func init() {
 	rootCmd.Flags().StringArrayVarP(&variables, "variable", "v", make([]string, 0), "A variable to be used in the Templates. e.g. SECRET_KEY=something-secret")
 }
 
+func validatePathArgs(args []string) ([]string, error) {
+	returnPaths := make([]string, 0)
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		fileInfo, err := os.Stat(arg)
+		if err != nil {
+			return nil, fmt.Errorf("error getting file or folder %v: %w", arg, err)
+		}
+		if fileInfo.IsDir() {
+			err = filepath.WalkDir(arg, func(path string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return fmt.Errorf("error accessing path %v: %w", path, err)
+				}
+
+				if !d.IsDir() {
+					returnPaths = append(returnPaths, path)
+				}
+
+				return nil
+			})
+
+			if err != nil {
+				return nil, fmt.Errorf("error while walking through directory: %w", err)
+			}
+
+			continue
+		}
+
+		returnPaths = append(returnPaths, arg)
+	}
+	return returnPaths, nil
+}
+
 func validateDirectVars(vars []string) (map[string]string, error) {
 	returnVars := make(map[string]string)
 	for i := 0; i < len(vars); i++ {
 		variable := vars[i]
-		// splitVar := strings.Split(variable, "=")
-		// if len(splitVar) != 2 {
-		// 	return nil, ErrInvalidVariable
-		// }
-		// returnVars[strings.TrimSpace(splitVar[0])] = splitVar[1]
 		index := strings.Index(variable, "=")
 		if index == -1 {
 			return nil, ErrInvalidVariable
