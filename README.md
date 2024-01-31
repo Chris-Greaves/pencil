@@ -2,10 +2,10 @@
     <img src="README.md.files/pencil2.jpg" alt="Pencil logo" height=200>
     <h1>Pencil</h1>
     <img src="https://img.shields.io/github/go-mod/go-version/chris-greaves/pencil?filename=go.mod">
-    <img src="https://github.com/chris-greaves/pencil/actions/workflows/go.yml/badge.svg" alt="Build Workflow status badge">
-    <img src="https://github.com/chris-greaves/pencil/actions/workflows/release.yml/badge.svg" alt="Release Workflow status badge">
+    <a href="https://github.com/Chris-Greaves/pencil/actions/workflows/go.yml"><img src="https://github.com/chris-greaves/pencil/actions/workflows/go.yml/badge.svg" alt="Build Workflow status badge"></a>
+    <a href="https://github.com/Chris-Greaves/pencil/releases"><img src="https://github.com/chris-greaves/pencil/actions/workflows/release.yml/badge.svg" alt="Release Workflow status badge"></a>
     <a href="https://github.com/Chris-Greaves/pencil/releases"><img src="https://img.shields.io/github/v/release/chris-greaves/pencil?label=Latest%20Release" alt="Latest Release badge"></a>
-    <img src="https://github.com/chris-greaves/pencil/actions/workflows/docker-publish.yml/badge.svg" alt="Docker Workflow status badge">
+    <a href="https://github.com/Chris-Greaves/pencil/pkgs/container/pencil"><img src="https://github.com/chris-greaves/pencil/actions/workflows/docker-publish.yml/badge.svg" alt="Docker Workflow status badge"></a>
 </div>
 
 # 
