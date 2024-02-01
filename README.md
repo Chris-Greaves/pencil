@@ -55,3 +55,13 @@ Pencil is available as a docker image or executable.
 4. Run `pencil -v Name=Chris test.txt`
 5. Now check the contents of `test.txt` (e.g. `cat test.txt`)
 
+## How do Variables Work?
+
+In order for a Template engine to be useful, you've gotta give it some values! Pencil handles variables in a few ways; below is a table showing how to input variables and then use them.
+
+| Type | Input | Usage |
+| --- | --- | --- |
+| Direct | `pencil -v Name=Value` | `{{ var "Name" }}` or `{{ .Var.Name }}` |
+| Environment | `Name=Value pencil` | `{{ env "Name" }}` or `{{ .Env.Name }}` |
+
+> NOTE: More variable types are likely to come in the future.
