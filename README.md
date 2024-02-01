@@ -65,3 +65,36 @@ In order for a Template engine to be useful, you've gotta give it some values! P
 | Environment | `Name=Value pencil` | `{{ env "Name" }}` or `{{ .Env.Name }}` |
 
 > NOTE: More variable types are likely to come in the future.
+
+## In-place or Template?
+
+**In-place**  
+By this, we mean a file whose content is treated as a template, Parsed and Executed, and then written back into the file. Because the file's content is overwritten, this is a permanent change and cannot be re-run with different variables. This strategy is desirable in specific docker-compose scenarios where you don't want to specify the variables every time you run a restart or rebuild. A brief demonstration can be found below:
+
+```bash
+echo "Hello {{ var "Name" }}!" > test.txt
+pencil -v Name=Chris test.txt
+cat test.txt # Outputs: Hello Chris!
+pencil -v Name=Kyle test.txt
+cat test.txt # Outputs: Hello Chris!
+```
+
+Because the file no longer contains the template syntax, it is unchanged when run a second time with a different value.
+
+**Template**  
+This is when a template file is used and not changed, even after Pencil has executed it. So, instead of the file's content being overwritten, the resulting content is written into a new file. This strategy is useful when you often want to make config changes and don't mind repeatedly supplying the variables. In docker-compose situations, the generated file is recreated every time the Pencil service is re-run. A brief demonstration can be found below:
+
+```bash
+echo "Hello {{ var "Name" }}!" > test.txt.gotmpl
+ls                  # Outputs: test.txt.gotmpl
+pencil -v Name=Chris test.txt.gotmpl
+ls                  # Outputs: test.txt, test.txt.gotmpl
+cat test.txt        # Outputs: Hello Chris!
+cat test.txt.gotmpl # Outputs: Hello {{ var "Name" }}!
+pencil -v Name=Kyle test.txt
+ls                  # Outputs: test.txt, test.txt.gotmpl
+cat test.txt        # Outputs: Hello Kyle!
+cat test.txt.gotmpl # Outputs: Hello {{ var "Name" }}!
+```
+
+As you can see, a file was created alongside the template with the resulting content from executing it. The file name is the same as the template without the `.gotmpl` extension. The template file is unchanged, allowing you to re-run Pencil to update the generated file with the new variable.

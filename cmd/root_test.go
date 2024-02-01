@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -74,6 +78,63 @@ func TestValidatePathArgs(t *testing.T) {
 			if len(output) != 0 || len(tC.output) != 0 {
 				if eq := reflect.DeepEqual(output, tC.output); !eq {
 					t.Errorf("expected output to be '%s', but got '%s'", tC.output, output)
+				}
+			}
+		})
+	}
+}
+
+func TestWriteToFile(t *testing.T) {
+	testCases := []struct {
+		desc           string
+		path           string
+		input_filename string
+		created_file   string
+		err_expected   bool
+		err_contains   string
+	}{
+		{
+			desc:           "will write to the file",
+			path:           t.TempDir(),
+			input_filename: "file.txt",
+			created_file:   "file.txt",
+			err_expected:   false,
+			err_contains:   "",
+		},
+		{
+			desc:           "error when path doesn't exist",
+			path:           "/does/not/exist",
+			input_filename: "file.txt",
+			created_file:   "file.txt",
+			err_expected:   true,
+			err_contains:   "cannot find the path specified",
+		},
+		{
+			desc:           "will remove .gotmpl from file",
+			path:           t.TempDir(),
+			input_filename: "file.txt.gotmpl",
+			created_file:   "file.txt",
+			err_expected:   false,
+			err_contains:   "",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			fileContent := bytes.NewBufferString("file contents")
+			fullInputPath := filepath.Join(tC.path, tC.input_filename)
+			fullOutputPath := filepath.Join(tC.path, tC.created_file)
+
+			err := writeToFile(fullInputPath, *fileContent)
+			if (err != nil) != tC.err_expected {
+				t.Errorf("resulting error was not what was expected, '%s'", err)
+			}
+			if err != nil && !strings.Contains(err.Error(), tC.err_contains) {
+				t.Errorf("expected error to contain '%s', but got '%s'", tC.err_contains, err.Error())
+			}
+			if err == nil && !tC.err_expected {
+				_, statErr := os.Stat(fullOutputPath)
+				if statErr != nil {
+					t.Error("expected file wasn't created")
 				}
 			}
 		})

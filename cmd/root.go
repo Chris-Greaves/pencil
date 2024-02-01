@@ -72,7 +72,7 @@ For example: "pencil -v SECRET_KEY=something-secret app/config.yml"`,
 				return fmt.Errorf("error while processing %v: %w", file, err)
 			}
 
-			if err := os.WriteFile(file, buf.Bytes(), 0666); err != nil {
+			if err := writeToFile(file, buf); err != nil {
 				return fmt.Errorf("error while writing over existing file %v, may be left in a partial state: %w", file, err)
 			}
 		}
@@ -139,4 +139,12 @@ func validateDirectVars(vars []string) (map[string]string, error) {
 	}
 
 	return returnVars, nil
+}
+
+func writeToFile(filePath string, buf bytes.Buffer) error {
+	inputPath := filePath
+	if filepath.Ext(filePath) == ".gotmpl" {
+		inputPath = strings.TrimSuffix(filePath, ".gotmpl")
+	}
+	return os.WriteFile(inputPath, buf.Bytes(), 0666)
 }
