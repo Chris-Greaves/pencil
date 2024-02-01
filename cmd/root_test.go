@@ -54,7 +54,7 @@ func TestValidatePathArgs(t *testing.T) {
 			desc:       "can accept valid folder path",
 			input:      []string{"../test/folder/"},
 			output_err: nil,
-			output:     []string{"..\\test\\folder\\file1.ini", "..\\test\\folder\\file2.txt"},
+			output:     []string{"../test/folder/file1.ini", "../test/folder/file2.txt"},
 		},
 		{
 			desc:       "will error when file doesn't exist",
@@ -107,7 +107,7 @@ func TestWriteToFile(t *testing.T) {
 			input_filename: "file.txt",
 			created_file:   "file.txt",
 			err_expected:   true,
-			err_contains:   "cannot find the path specified",
+			err_contains:   "no such file or directory",
 		},
 		{
 			desc:           "will remove .gotmpl from file",

@@ -76,7 +76,7 @@ func TestParseAndExecuteFile(t *testing.T) {
 			envs:         map[string]string{"AppName": "Pencil"},
 			output:       "",
 			expect_err:   true,
-			err_contains: "The system cannot find the file specified",
+			err_contains: "no such file or directory",
 		},
 		{
 			desc:         "error when a function that doesn't exist is used",
