@@ -107,7 +107,7 @@ func validatePathArgs(args []string) ([]string, error) {
 				}
 
 				if !d.IsDir() {
-					returnPaths = append(returnPaths, path)
+					returnPaths = append(returnPaths, filepath.ToSlash(path))
 				}
 
 				return nil
@@ -120,7 +120,7 @@ func validatePathArgs(args []string) ([]string, error) {
 			continue
 		}
 
-		returnPaths = append(returnPaths, arg)
+		returnPaths = append(returnPaths, filepath.ToSlash(arg))
 	}
 	return returnPaths, nil
 }
