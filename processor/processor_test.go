@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/Chris-Greaves/pencil/test"
 )
 
 func TestConvertVarsArrayToMap(t *testing.T) {
@@ -76,7 +78,7 @@ func TestParseAndExecuteFile(t *testing.T) {
 			envs:         map[string]string{"AppName": "Pencil"},
 			output:       "",
 			expect_err:   true,
-			err_contains: "no such file or directory",
+			err_contains: test.FileNotFoundText(),
 		},
 		{
 			desc:         "error when a function that doesn't exist is used",

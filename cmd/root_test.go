@@ -9,6 +9,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/Chris-Greaves/pencil/test"
 )
 
 func TestValidateVars(t *testing.T) {
@@ -107,7 +109,7 @@ func TestWriteToFile(t *testing.T) {
 			input_filename: "file.txt",
 			created_file:   "file.txt",
 			err_expected:   true,
-			err_contains:   "no such file or directory",
+			err_contains:   test.PathNotFoundText(),
 		},
 		{
 			desc:           "will remove .gotmpl from file",
