@@ -3,6 +3,8 @@ services:
     build:
       context: .
       target: final
+      args:
+        - GO_VERSION=1.16
     environment:
       - OPTION_COUNT=5
     command:
