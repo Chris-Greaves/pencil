@@ -1,7 +1,6 @@
 name: Go Release
 
 on:
-  pull_request:
   push:
     # run only against tags
     tags:
